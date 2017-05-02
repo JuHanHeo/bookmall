@@ -9,10 +9,9 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.jx372.bookmall.vo.CartVo;
+import com.jx372.bookmall.vo.BooksVo;
 
-
-public class CartDao {
+public class BooksDao {
 	Connection conn = null;
 	private Connection getConnect() throws SQLException{
 
@@ -29,26 +28,26 @@ public class CartDao {
 			return null;
 		} 
 	}
-	public List<CartVo> getList(){
+	public List<BooksVo> getList(){
 
 		Statement stmt = null;
 		ResultSet rs = null;
-		List<CartVo> list = new ArrayList<CartVo>();
+		List<BooksVo> list = new ArrayList<BooksVo>();
 		
 		try {
 			conn = getConnect();
 			stmt = conn.createStatement();
-			String sql = "select c.no, b.name, c.cnt, c.price from cart c, books b where b.no = c.book_no";
+			String sql = "select b.no, b.isbn, b.name, b.price, c.name from books b, category c where b.cate_no = c.no order by 1";
 			
 			rs = stmt.executeQuery(sql);
 			
 			while(rs.next()){
-				CartVo vo = new CartVo();
+				BooksVo vo = new BooksVo();
 				vo.setNo(rs.getLong(1));
-				vo.setBookName(rs.getString(2));
-				vo.setCnt(rs.getLong(3));
+				vo.setIsbn(rs.getLong(2));
+				vo.setName(rs.getString(3));
 				vo.setPrice(rs.getLong(4));
-				
+				vo.setCateName(rs.getString(5));
 				
 				list.add(vo);
 			}
@@ -79,20 +78,20 @@ public class CartDao {
 		
 	}
 	
-	public boolean insert(CartVo vo){
+	public boolean insert(BooksVo vo){
 		
 		PreparedStatement pstmt = null;
 		
 		try {
 			conn = getConnect();
 			
-			String sql = "insert into cart values(null, ?, ?, ?, ?)";
+			String sql = "insert into Books values(null, ?, ?, ?, ?)";
 			pstmt = conn.prepareStatement(sql);
 			
-			pstmt.setLong(1,vo.getMemNo());
-			pstmt.setLong(2, vo.getBookNo());
-			pstmt.setLong(3, vo.getCnt());
-			pstmt.setLong(4, vo.getPrice());
+			pstmt.setLong(1, vo.getIsbn());
+			pstmt.setString(2,vo.getName());
+			pstmt.setLong(3, vo.getPrice());
+			pstmt.setLong(4, vo.getCateNo());
 			
 			int cnt = pstmt.executeUpdate();
 			
@@ -112,11 +111,9 @@ public class CartDao {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			
 		}
 		
 	}
-
 	public int getCount(){
 		Statement stmt = null;
 		ResultSet rs = null;
@@ -124,7 +121,7 @@ public class CartDao {
 		try {
 			conn = getConnect();
 			stmt = conn.createStatement();
-			String sql = "select count(*) from cart";
+			String sql = "select count(*) from books";
 			
 			rs = stmt.executeQuery(sql);
 			

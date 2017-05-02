@@ -8,11 +8,9 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import com.jx372.bookmall.vo.MembersVo;
 
-import com.jx372.bookmall.vo.CartVo;
-
-
-public class CartDao {
+public class MembersDao {
 	Connection conn = null;
 	private Connection getConnect() throws SQLException{
 
@@ -29,27 +27,26 @@ public class CartDao {
 			return null;
 		} 
 	}
-	public List<CartVo> getList(){
+	public List<MembersVo> getList(){
 
 		Statement stmt = null;
 		ResultSet rs = null;
-		List<CartVo> list = new ArrayList<CartVo>();
+		List<MembersVo> list = new ArrayList<MembersVo>();
 		
 		try {
 			conn = getConnect();
 			stmt = conn.createStatement();
-			String sql = "select c.no, b.name, c.cnt, c.price from cart c, books b where b.no = c.book_no";
+			String sql = "select no, name, tel, email, passwd from members";
 			
 			rs = stmt.executeQuery(sql);
 			
 			while(rs.next()){
-				CartVo vo = new CartVo();
+				MembersVo vo = new MembersVo();
 				vo.setNo(rs.getLong(1));
-				vo.setBookName(rs.getString(2));
-				vo.setCnt(rs.getLong(3));
-				vo.setPrice(rs.getLong(4));
-				
-				
+				vo.setName(rs.getString(2));
+				vo.setTel(rs.getString(3));
+				vo.setEmail(rs.getString(4));
+				vo.setPasswd(rs.getString(5));
 				list.add(vo);
 			}
 			return list;
@@ -57,42 +54,25 @@ public class CartDao {
 		} catch (SQLException e) {
 			e.printStackTrace();
 			return null;
-		} finally {
-			//자원 정리
-			try {
-				if(rs != null){
-					rs.close();
-				}
-				if(stmt != null){
-					stmt.close();
-				}
-				if(conn != null){
-					conn.close();
-				}
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			
 		}
 
 		
 	}
 	
-	public boolean insert(CartVo vo){
+	public boolean insert(MembersVo vo){
 		
 		PreparedStatement pstmt = null;
 		
 		try {
 			conn = getConnect();
 			
-			String sql = "insert into cart values(null, ?, ?, ?, ?)";
+			String sql = "insert into members values(null, ?, ?, ?, password(?))";
 			pstmt = conn.prepareStatement(sql);
 			
-			pstmt.setLong(1,vo.getMemNo());
-			pstmt.setLong(2, vo.getBookNo());
-			pstmt.setLong(3, vo.getCnt());
-			pstmt.setLong(4, vo.getPrice());
+			pstmt.setString(1,vo.getName());
+			pstmt.setString(2, vo.getTel());
+			pstmt.setString(3, vo.getEmail());
+			pstmt.setString(4, vo.getPasswd());
 			
 			int cnt = pstmt.executeUpdate();
 			
@@ -102,21 +82,10 @@ public class CartDao {
 		} catch (SQLException e) {
 			e.printStackTrace();
 			return false;
-		} finally {
-			//자원 정리
-			try {
-				if(conn != null){
-					conn.close();
-				}
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			
 		}
 		
 	}
-
+	
 	public int getCount(){
 		Statement stmt = null;
 		ResultSet rs = null;
@@ -124,7 +93,7 @@ public class CartDao {
 		try {
 			conn = getConnect();
 			stmt = conn.createStatement();
-			String sql = "select count(*) from cart";
+			String sql = "select count(*) from members";
 			
 			rs = stmt.executeQuery(sql);
 			
@@ -159,5 +128,4 @@ public class CartDao {
 		}
 		
 	}
-
 }
